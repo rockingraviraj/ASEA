@@ -1,0 +1,765 @@
+1. Overall architecture
+
+Tumhara current structure:
+
+ASEA
+│
+├── CONTROL PLANE
+├── INTELLIGENCE LAYER
+├── CONTEXT LAYER
+├── ENGINEERING TOOL LAYER
+├── EXECUTION LAYER
+└── DELIVERY LAYER
+
+This is strong because tumne:
+
+AI reasoning
+repository knowledge
+deterministic tools
+execution
+governance
+delivery
+
+ko alag kar diya hai.
+
+That's exactly what I wanted to see after reviewing the original workflow.
+
+2. One important correction: layers shouldn't be strictly sequential
+
+Architecture diagram dekhkar ek mistake naturally ho sakti hai:
+
+Control
+ ↓
+Intelligence
+ ↓
+Context
+ ↓
+Tools
+ ↓
+Execution
+ ↓
+Delivery
+
+Actual runtime mein aisa linear flow nahi hona chahiye.
+
+Instead:
+
+                    CONTROL PLANE
+                         │
+                ┌────────┼────────┐
+                ↓        ↓        ↓
+          Intelligence Context  Policy
+                │        │        │
+                └────┬───┘        │
+                     ↓             │
+               Tool Layer ←────────┘
+                     │
+                     ↓
+              Execution Layer
+                     │
+                     ↓
+               Validation
+                     │
+                     ↓
+                Control Plane
+
+Control Plane sab layers ko govern karega.
+
+This is important.
+
+3. CONTROL PLANE — ⭐⭐⭐⭐⭐
+
+Tumne:
+
+CONTROL PLANE
+├── Task Manager
+├── Orchestrator
+├── State Manager
+├── Policy Engine
+├── Permission Manager
+├── Retry Manager
+├── Human Escalation
+└── Audit System
+
+Excellent.
+
+But I'd make Orchestrator the center:
+
+                 ORCHESTRATOR
+                      │
+       ┌──────────────┼──────────────┐
+       ↓              ↓              ↓
+ Task Manager     State Manager   Policy Engine
+                                      │
+                               Permission Manager
+                                      │
+                               Human Escalation
+                                      │
+                                Retry Manager
+                                      │
+                                  Audit System
+Responsibilities
+Task Manager
+
+Creates:
+
+Task
+Task ID
+Repository
+Issue
+Priority
+Status
+Created At
+Orchestrator
+
+Decides:
+
+Which agent?
+When?
+With what context?
+Which tools?
+What's next?
+State Manager
+
+Maintains:
+
+CREATED
+UNDERSTANDING
+ANALYZING
+PLANNING
+IMPLEMENTING
+TESTING
+RECOVERING
+REVIEWING
+VALIDATING
+PR_READY
+HUMAN_REVIEW
+COMPLETED
+FAILED
+
+This is extremely important.
+
+4. Policy Engine + Permission Manager
+
+These two look similar, so define them carefully.
+
+Policy Engine
+
+Answers:
+
+"What is allowed?"
+
+Example:
+
+Changing authentication code?
+→ high risk
+
+
+Changing README?
+→ low risk
+
+
+Modifying production workflow?
+→ very high risk
+Permission Manager
+
+Answers:
+
+"Who/which agent is allowed to do it?"
+
+Example:
+
+Coding Agent
+→ read/write src/
+
+
+Review Agent
+→ read-only
+
+
+Test Agent
+→ read + execute tests
+
+
+Git Agent
+→ branch/commit
+
+
+PR Agent
+→ create PR
+
+So:
+
+Policy Engine
+    ↓
+Is action allowed?
+
+
+Permission Manager
+    ↓
+Does this agent have permission?
+
+Keep both.
+
+5. Retry Manager
+
+Good addition.
+
+But don't let it simply mean:
+
+retry 3 times
+
+It should track attempt strategy.
+
+Example:
+
+Attempt 1
+Hypothesis A
+Patch A
+Failed test
+
+
+        ↓
+
+
+Attempt 2
+Revised hypothesis
+Patch B
+Failed CI
+
+
+        ↓
+
+
+Attempt 3
+Alternative approach
+Patch C
+Failed security
+
+
+        ↓
+
+
+Escalate
+
+So Retry Manager should work with:
+
+State Manager
++
+Orchestrator
++
+Recovery Agent
+6. Intelligence Layer — ⭐⭐⭐⭐⭐
+
+Current:
+
+Issue Analysis
+Root Cause
+Planning
+Coding
+Test Generation
+Recovery
+Review
+
+Very good.
+
+But I would not put CI/CD Agent here.
+
+Why?
+
+Because CI/CD is primarily an engineering tool/integration capability.
+
+The AI reasoning that analyzes CI failures belongs to Intelligence, but:
+
+GitHub Actions
+Jenkins
+GitLab CI
+
+belongs to Tool Layer.
+
+So:
+
+CI/CD Tool
+      ↓
+Failure logs
+      ↓
+Recovery Agent
+      ↓
+Reasoning
+      ↓
+CI/CD Tool
+
+That's cleaner.
+
+7. Missing one thing in Intelligence Layer
+
+I'd add:
+
+Decision / Strategy Agent
+
+or make it part of Orchestrator.
+
+Because eventually you need:
+
+Task
+ ↓
+What needs to happen?
+ ↓
+Which agents are necessary?
+ ↓
+In what order?
+
+For example:
+
+Issue doesn't always require:
+
+Root Cause
+Coding
+Test
+Recovery
+Security
+
+Maybe a documentation issue only needs:
+
+Issue Analysis
+ ↓
+Planning
+ ↓
+Coding
+ ↓
+Review
+
+The orchestrator should dynamically construct the workflow.
+
+8. CONTEXT LAYER — ⭐⭐⭐⭐⭐
+
+This is one of the strongest parts.
+
+Repository Knowledge Model
+Code Index
+AST
+Dependency Graph
+Repository Memory
+Context Engine
+
+Exactly right.
+
+But understand the distinction:
+
+AST
+
+Structural representation.
+
+Class
+ ├── Field
+ ├── Constructor
+ └── Method
+Dependency Graph
+
+Relationship representation.
+
+Controller
+ ↓
+Service
+ ↓
+Repository
+ ↓
+Database
+Code Index
+
+Search/retrieval.
+
+method
+class
+file
+symbol
+text
+embedding
+Repository Knowledge Model
+
+Higher-level representation:
+
+Architecture
+Modules
+Components
+Dependencies
+APIs
+Tests
+Configurations
+Repository Memory
+
+Historical knowledge:
+
+Previous bugs
+Previous fixes
+Coding patterns
+Past PRs
+Failed attempts
+Context Engine
+
+This is the query layer over all of them.
+
+For example:
+
+Root Cause Agent asks:
+
+
+"Give me everything relevant to
+profile update failure."
+
+
+        ↓
+
+
+Context Engine
+
+
+        ↓
+
+
+AST
+Dependency Graph
+Code Index
+Memory
+Git History
+Logs
+
+
+        ↓
+
+
+Relevant Context
+
+That's excellent architecture.
+
+9. ENGINEERING TOOL LAYER — ⭐⭐⭐⭐⭐
+Git
+GitHub
+Build
+Test
+Static Analysis
+Security
+CI/CD
+
+This is correct.
+
+And here's an important architectural principle:
+
+Agents should not directly interact with infrastructure whenever possible.
+
+Instead:
+
+Coding Agent
+     ↓
+Tool Interface
+     ↓
+Git/File Tool
+     ↓
+Actual Git/File system
+
+For example:
+
+BuildTool
+TestTool
+GitTool
+GitHubTool
+SecurityTool
+StaticAnalysisTool
+CIDeliveryTool
+
+Then agents interact with standardized tool interfaces.
+
+This makes your system extensible.
+
+10. EXECUTION LAYER — ⭐⭐⭐⭐⭐
+Sandbox Manager
+     ↓
+Ephemeral Workers
+
+Keep exactly this concept.
+
+I'd actually make this more explicit:
+
+Sandbox Manager
+│
+├── Worker Provisioner
+├── Resource Limiter
+├── Network Controller
+├── Filesystem Isolation
+├── Process Controller
+└── Worker Cleanup
+
+Then:
+
+Task
+ ↓
+Create Worker
+ ↓
+Clone Repository
+ ↓
+Apply Patch
+ ↓
+Build
+ ↓
+Test
+ ↓
+Collect Results
+ ↓
+Destroy Worker
+
+This is much safer.
+
+11. DELIVERY LAYER — ⭐⭐⭐⭐⭐
+
+Current:
+
+Patch Manager
+Final Validation
+Risk Assessment
+PR Generator
+Human Approval
+
+Very good.
+
+But there's a subtle issue:
+
+Patch Manager should not really be considered only "delivery."
+
+It operates during implementation too.
+
+I'd move it conceptually into a cross-cutting component:
+
+Patch Manager
+
+used by:
+
+Coding Agent
+Recovery Agent
+Refactoring
+Test Agent
+
+Then Delivery handles:
+
+Final Validation
+Risk Assessment
+PR
+Human Approval
+12. Add one missing component: Evidence Store
+
+This is the biggest thing still missing from your architecture.
+
+ASEA shouldn't only say:
+
+Fix successful
+
+It should preserve evidence.
+
+Create:
+
+Evidence Store
+Evidence
+│
+├── Test Results
+├── Build Logs
+├── Static Analysis
+├── Security Results
+├── CI Results
+├── Code Diff
+├── Runtime Logs
+├── Root Cause Evidence
+└── Review Findings
+
+Then final PR can say:
+
+Why was this fix accepted?
+
+
+Evidence:
+✓ Regression test passed
+✓ Full test suite passed
+✓ Build passed
+✓ Static analysis passed
+✓ Security scan passed
+✓ CI passed
+✓ Review passed
+
+This fits perfectly with your original requirement of producing a validated engineering change with evidence.
+
+13. Add Observability as a cross-cutting layer
+
+Eventually:
+
+Observability
+
+should track:
+
+Agent execution
+LLM calls
+Token usage
+Latency
+Failures
+Retries
+Tool calls
+Sandbox execution
+Task duration
+Success rate
+
+Architecture:
+
+               OBSERVABILITY
+                    │
+     ┌──────────────┼──────────────┐
+     ↓              ↓              ↓
+ Control        Agents          Tools
+
+Technically:
+
+OpenTelemetry
+Prometheus
+Grafana
+structured logs
+
+You don't need to implement this in MVP, but architecture should leave room for it.
+
+14. Add Event Bus
+
+This becomes important once multiple agents/workers exist.
+
+I would add:
+
+EVENT / MESSAGING LAYER
+
+
+Kafka
+
+between Orchestrator and asynchronous workers.
+
+Example:
+
+TaskCreated
+RepositoryIndexed
+IssueAnalyzed
+RootCauseIdentified
+PlanCreated
+PatchGenerated
+TestsGenerated
+ValidationStarted
+ValidationFailed
+RecoveryStarted
+ValidationPassed
+ReviewCompleted
+PRCreated
+
+Then ASEA becomes event-driven rather than tightly coupled.
+
+15. Final architecture I'd lock
+
+If we refine your current architecture, I'd make the conceptual architecture:
+
+ASEA
+│
+├── 1. CONTROL PLANE
+│   ├── Task Manager
+│   ├── Orchestrator
+│   ├── State Manager
+│   ├── Policy Engine
+│   ├── Permission Manager
+│   ├── Retry Manager
+│   ├── Human Escalation
+│   └── Audit System
+│
+├── 2. INTELLIGENCE LAYER
+│   ├── Issue Analysis Agent
+│   ├── Root Cause Agent
+│   ├── Planning Agent
+│   ├── Coding Agent
+│   ├── Test Generation Agent
+│   ├── Recovery Agent
+│   └── Review Agent
+│
+├── 3. CONTEXT LAYER
+│   ├── Repository Knowledge Model
+│   ├── Code Index
+│   ├── AST
+│   ├── Dependency Graph
+│   ├── Repository Memory
+│   └── Context Engine
+│
+├── 4. ENGINEERING TOOL LAYER
+│   ├── Git Tool
+│   ├── GitHub Tool
+│   ├── Build Tool
+│   ├── Test Tool
+│   ├── Static Analysis Tool
+│   ├── Security Tool
+│   └── CI/CD Tool
+│
+├── 5. EXECUTION LAYER
+│   └── Sandbox Manager
+│       ├── Worker Provisioner
+│       ├── Resource Limits
+│       ├── Network Isolation
+│       └── Ephemeral Workers
+│
+├── 6. DELIVERY LAYER
+│   ├── Final Validation
+│   ├── Risk Assessment
+│   ├── PR Generator
+│   └── Human Approval
+│
+├── 7. EVENT / MESSAGING LAYER
+│   └── Kafka
+│
+└── CROSS-CUTTING
+    ├── Patch Manager
+    ├── Evidence Store
+    ├── Observability
+    └── Audit / Security
+16. One architectural rule I want you to remember
+
+This will save you a lot of trouble when we start coding:
+
+❌ Don't build this
+Agent → Agent → Agent → Agent
+❌ And don't build this
+LLM → Shell → Repository
+✅ Build this
+                 ORCHESTRATOR
+                      │
+               ┌──────┴──────┐
+               ↓             ↓
+             AGENT          STATE
+               │
+               ↓
+             CONTEXT
+               │
+               ↓
+             POLICY
+               │
+               ↓
+              TOOL
+               │
+               ↓
+            SANDBOX
+               │
+               ↓
+             RESULT
+               │
+               ↓
+            EVIDENCE
+               │
+               ↓
+          ORCHESTRATOR
+
+That is the architecture that makes ASEA autonomous but controlled.
+
+My final rating
+Area	Rating
+Layer separation	9.5/10
+Agent design	9/10
+Safety	9/10
+Scalability	8.5/10
+Autonomy	9/10
+Maintainability	9/10
+Industry relevance	9.5/10
+Implementation clarity
