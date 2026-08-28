@@ -1,0 +1,246 @@
+16. DIVISION C — EXECUTION, DEVOPS, INTEGRATION & FRONTEND
+Owner
+
+Person 3
+
+This division owns the physical execution and user experience.
+
+DIVISION C
+│
+├── Sandbox Manager
+├── Ephemeral Workers
+├── Docker
+├── Build Tool
+├── Test Tool
+├── Static Analysis
+├── Security Scanning
+├── CI/CD Integration
+├── Git
+├── GitHub
+├── PR Generator
+├── Secrets Management
+├── Frontend
+└── Deployment
+
+This is a large responsibility, so frontend should initially remain focused.
+
+17. Sandbox
+
+Initial technology:
+
+Docker
+Sandbox Manager
+       │
+       ▼
+Docker Container
+       │
+       ├── Repository
+       ├── Build
+       ├── Tests
+       └── Static Analysis
+
+Security:
+
+Resource limits
+Filesystem isolation
+Network restrictions
+Non-root execution
+Seccomp
+Timeout
+Process limits
+
+Later:
+
+Docker
+ ↓
+gVisor
+ ↓
+Firecracker
+
+Don't start with Firecracker.
+
+18. Build Tool
+
+ASEA should initially target Java repositories.
+
+Therefore:
+
+Maven
+Gradle
+
+Build abstraction:
+
+BuildTool
+│
+├── MavenExecutor
+└── GradleExecutor
+
+Example:
+
+./mvnw test
+./gradlew test
+
+The agent doesn't execute these commands directly.
+
+19. Test Tool
+TestTool
+│
+├── Unit Tests
+├── Integration Tests
+├── Regression Tests
+└── Coverage
+
+Java ecosystem:
+
+JUnit 5
+Mockito
+Testcontainers
+JaCoCo
+20. Static Analysis
+
+For Java repositories:
+
+SonarQube / Sonar
+Checkstyle
+SpotBugs
+PMD
+
+But don't integrate everything initially.
+
+MVP:
+
+Checkstyle
+SpotBugs
+Sonar
+
+can be introduced progressively.
+
+21. Security
+
+Use multiple layers.
+
+Dependency security
+OWASP Dependency-Check
+
+and later:
+
+Snyk / similar enterprise scanners
+Secret scanning
+Gitleaks
+Static security
+Semgrep
+
+The important architecture is:
+
+Patch
+ ↓
+Security Tools
+ ↓
+Security Evidence
+ ↓
+Risk Engine
+22. Git & GitHub
+
+Person 3 owns integrations.
+
+Git
+
+Use:
+
+JGit
+
+for Java-side Git operations where appropriate.
+
+But sandbox workers can also use native Git CLI where required.
+
+GitHub
+
+Use GitHub REST/GraphQL APIs.
+
+Capabilities:
+
+Repository
+Issues
+Branches
+Commits
+Pull Requests
+Checks
+Actions
+Comments
+Webhooks
+
+Architecture:
+
+ASEA
+ ↓
+GitHub Adapter
+ ↓
+GitHub API
+23. CI/CD
+
+Initially:
+
+GitHub Actions
+
+ASEA should:
+
+Read CI status
+Fetch logs
+Analyze failure
+Generate fix
+Run tests
+Push branch
+Trigger CI
+Observe result
+
+Later:
+
+GitHub Actions
+GitLab CI
+Jenkins
+
+through adapters.
+
+24. Frontend
+
+Don't overbuild frontend.
+
+React + TypeScript
+
+Use:
+
+React
+TypeScript
+Vite
+
+UI should primarily provide:
+
+Dashboard
+Tasks
+Repository
+Agent execution
+Task timeline
+Diff
+Tests
+Evidence
+Risk
+Approval
+PR
+
+Example:
+
+┌──────────────────────────────────────┐
+│ ASEA Task #1024                      │
+├──────────────────────────────────────┤
+│ Status: VALIDATING                   │
+│                                      │
+│ ✓ Issue Analysis                     │
+│ ✓ Root Cause                         │
+│ ✓ Plan                               │
+│ ✓ Code Patch                         │
+│ ✓ Tests                              │
+│ → Security                           │
+│ ○ CI                                 │
+│                                      │
+│ Risk: LOW                            │
+└──────────────────────────────────────┘
