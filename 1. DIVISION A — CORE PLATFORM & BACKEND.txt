@@ -1,0 +1,204 @@
+1. DIVISION A — CORE PLATFORM & BACKEND
+Owner
+
+Java + Spring Boot developer
+
+This person owns the brain/control plane of ASEA.
+
+DIVISION A
+│
+├── API Gateway / REST API
+├── Task Manager
+├── Orchestrator
+├── State Graph
+├── Decision Engine
+├── Policy Engine
+├── Permission Manager
+├── Retry / Recovery Manager
+├── Cost / Budget Manager
+├── Human Escalation
+├── Audit
+├── Evidence Metadata
+└── Database
+Core Stack
+Requirement	Technology
+Language	Java 21 LTS
+Backend	Spring Boot 3.x
+API	Spring Web / REST
+Security	Spring Security
+Database	PostgreSQL
+ORM	Spring Data JPA / Hibernate
+DB migrations	Flyway
+Validation	Jakarta Bean Validation
+Messaging	Redis Streams
+Cache	Redis
+API documentation	OpenAPI / Swagger
+Build	Maven
+Testing	JUnit 5 + Mockito + Testcontainers
+Containers	Docker
+Observability	Micrometer + OpenTelemetry
+Logging	SLF4J + structured JSON logs
+Why Java?
+
+Because this layer needs:
+
+strong typing
+complex state management
+concurrency
+security
+transactional consistency
+long-term maintainability
+clean enterprise architecture
+
+This is exactly where Java/Spring Boot is strongest.
+
+2. Backend architecture
+
+I recommend modular monolith first, not microservices.
+
+This is extremely important for three people.
+
+Don't start with:
+
+10 Spring Boot microservices
+
+Instead:
+
+                    ASEA Backend
+                         │
+              Spring Boot Application
+                         │
+       ┌─────────────────┼─────────────────┐
+       │                 │                 │
+       ▼                 ▼                 ▼
+   Control           Evidence          Integration
+   Modules           Modules           Modules
+
+Internally:
+
+com.asea
+│
+├── task
+├── orchestration
+├── state
+├── policy
+├── permission
+├── retry
+├── budget
+├── human
+├── audit
+├── evidence
+├── repository
+├── agent
+├── tool
+├── model
+└── integration
+
+Later, if required:
+
+Modular Monolith
+      ↓
+Extract specific modules
+      ↓
+Microservices
+
+This avoids premature distributed-system complexity.
+
+3. Division A — Orchestrator
+
+The most important backend component.
+
+Task
+ ↓
+Orchestrator
+ ↓
+Decision Engine
+ ↓
+Agent
+ ↓
+Artifact
+ ↓
+Validation
+ ↓
+Evidence
+ ↓
+Orchestrator
+
+Orchestrator owns the state machine.
+
+Example:
+
+public enum TaskState {
+
+    CREATED,
+    UNDERSTANDING,
+    ANALYZING,
+    DIAGNOSING,
+    PLANNING,
+    IMPLEMENTING,
+    TESTING,
+    VALIDATING,
+    RECOVERING,
+    REVIEWING,
+    SECURITY_CHECK,
+    CI_VALIDATION,
+    PR_READY,
+    HUMAN_REVIEW,
+    COMPLETED,
+    FAILED,
+    ESCALATED
+}
+4. Division A — Database
+PostgreSQL
+
+Main database:
+
+PostgreSQL
+│
+├── users
+├── repositories
+├── tasks
+├── task_states
+├── agents
+├── agent_runs
+├── artifacts
+├── patches
+├── evidence
+├── policies
+├── permissions
+├── approvals
+├── audit_logs
+├── retry_attempts
+├── model_runs
+└── repository_memory
+pgvector
+
+Use PostgreSQL + pgvector for semantic retrieval initially.
+
+Don't introduce a separate vector database.
+
+5. Redis
+
+Use Redis for:
+
+Cache
+Session data
+Rate limiting
+Temporary state
+Distributed locks
+Streams
+
+And:
+
+Redis Streams
+
+for asynchronous agent/work execution.
+
+Example:
+
+asea.task.created
+asea.agent.execute
+asea.validation.started
+asea.validation.completed
+asea.task.failed
+asea.human.approval
