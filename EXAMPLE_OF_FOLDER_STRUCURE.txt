@@ -1,0 +1,32 @@
+asea/
+│
+├── backend/
+│   └── Spring Boot
+│
+├── ai-engine/
+│   └── Python
+│
+├── frontend/
+│   └── React
+│
+├── sandbox/
+│   ├── Dockerfiles
+│   └── worker scripts
+│
+├── contracts/
+│   ├── OpenAPI
+│   ├── JSON schemas
+│   └── event schemas
+│
+├── infrastructure/
+│   ├── docker-compose
+│   ├── postgres
+│   └── redis
+│
+├── docs/
+│   ├── architecture
+│   ├── agents
+│   ├── APIs
+│   └── ADRs
+│
+└── README.md
