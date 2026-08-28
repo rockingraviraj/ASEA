@@ -1,0 +1,1847 @@
+ASEA — FINAL ARCHITECTURE & WORKFLOW
+Autonomous Software Engineering Agent
+Final System Architecture, Engineering Workflow & Implementation Direction
+1. Project Definition
+
+ASEA (Autonomous Software Engineering Agent) is an evidence-driven, policy-governed autonomous software remediation platform designed to transform software engineering tasks such as bugs, CI failures, and dependency/security issues into validated code changes and pull requests.
+
+ASEA uses specialized AI agents, repository-level code intelligence, deterministic engineering tools, sandboxed execution, automated validation, risk assessment, and human supervision.
+
+The goal is not to blindly replace software engineers, but to automate repetitive software engineering work while maintaining:
+
+correctness
+security
+traceability
+auditability
+human control
+
+The core philosophy is:
+
+Human defines objective
+        ↓
+ASEA investigates
+        ↓
+ASEA plans
+        ↓
+ASEA implements
+        ↓
+ASEA validates
+        ↓
+ASEA produces evidence
+        ↓
+Human makes final decision
+2. Core Product Positioning
+
+ASEA should not initially position itself as another general-purpose Claude Code / Codex / Devin competitor.
+
+General autonomous coding is already highly competitive.
+
+ASEA's primary differentiation is:
+
+Evidence-driven autonomous software remediation.
+
+The system should focus initially on well-bounded engineering problems such as:
+
+CI/CD failures
+Bug remediation
+Dependency/CVE remediation
+Test generation and repair
+Legacy maintenance
+
+The key output is not merely:
+
+AI-generated code
+
+but:
+
+Validated Code Change
++
+Tests
++
+Security Results
++
+CI Results
++
+Risk Assessment
++
+Complete Evidence
++
+Pull Request
+
+This governance/evidence direction is the strongest differentiation identified during the critical industry evaluation.
+
+3. Core Design Philosophy
+
+ASEA follows:
+
+UNDERSTAND
+     ↓
+DIAGNOSE
+     ↓
+PLAN
+     ↓
+IMPLEMENT
+     ↓
+TEST
+     ↓
+OBSERVE
+     ↓
+RECOVER
+     ↓
+VALIDATE
+     ↓
+REVIEW
+     ↓
+DELIVER
+
+But this is not a rigid linear pipeline.
+
+The actual system is a:
+
+Stateful autonomous control loop.
+
+Failures can move execution backward:
+
+TESTING
+   ↓
+FAILURE
+   ↓
+ROOT CAUSE RE-EVALUATION
+   ↓
+RE-PLAN
+   ↓
+IMPLEMENT
+   ↓
+TEST
+
+The state machine therefore behaves as a state graph, not a simple sequence.
+
+4. FINAL HIGH-LEVEL ARCHITECTURE
+ASEA
+│
+├── 1. CONTROL PLANE
+│
+├── 2. INTELLIGENCE LAYER
+│
+├── 3. CONTEXT / REPOSITORY INTELLIGENCE
+│
+├── 4. MODEL PLATFORM
+│
+├── 5. ENGINEERING TOOL LAYER
+│
+├── 6. EXECUTION / SANDBOX LAYER
+│
+├── 7. CHANGE / DELIVERY LAYER
+│
+├── 8. EVIDENCE & AUDIT SYSTEM
+│
+├── 9. EVENT / ASYNC LAYER
+│
+├── 10. EVALUATION & LEARNING SYSTEM
+│
+└── 11. CROSS-CUTTING SYSTEMS
+5. CONTROL PLANE
+
+The Control Plane is the central nervous system of ASEA.
+
+CONTROL PLANE
+│
+├── Task Manager
+├── Orchestrator
+├── State Graph Manager
+├── Decision / Strategy Engine
+├── Policy Engine
+├── Permission Manager
+├── Retry / Recovery Manager
+├── Cost / Budget Manager
+├── Human Escalation Manager
+└── Audit Manager
+5.1 Task Manager
+
+Responsible for creating and managing engineering tasks.
+
+A task contains:
+
+Task ID
+Tenant ID
+Repository
+Issue / Trigger
+Task Type
+Priority
+Status
+Created At
+Updated At
+
+Example:
+
+Task #ASEA-1024
+
+Repository:
+payment-service
+
+Task:
+Fix HTTP 500 error in payment API
+
+Trigger:
+GitHub Issue
+6. Orchestrator
+
+The Orchestrator is the core decision-making component.
+
+Agents should NOT directly control other agents.
+
+Avoid:
+
+Agent A → Agent B → Agent C
+
+Instead:
+
+                    ORCHESTRATOR
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+       Context        Policy          State
+          │              │              │
+          └──────────────┼──────────────┘
+                         ↓
+                  Decision Engine
+                         ↓
+                    Selected Agent
+                         ↓
+                        Tool
+                         ↓
+                      Result
+                         ↓
+                     Evidence
+                         ↓
+                   ORCHESTRATOR
+
+The Orchestrator determines:
+
+which agent should execute
+when it should execute
+what context it receives
+which tools it can use
+what permissions it has
+whether retry is allowed
+what happens after success/failure
+whether human intervention is required
+7. Decision / Strategy Engine
+
+The Decision Engine dynamically determines the required workflow.
+
+ASEA should not execute every agent for every task.
+
+For example:
+
+Bug
+Issue Analysis
+      ↓
+Root Cause
+      ↓
+Planning
+      ↓
+Coding
+      ↓
+Testing
+      ↓
+Review
+CI failure
+CI Log Analysis
+      ↓
+Root Cause
+      ↓
+Recovery
+      ↓
+Build
+      ↓
+Test
+Dependency vulnerability
+Dependency Analysis
+      ↓
+Security Analysis
+      ↓
+Planning
+      ↓
+Patch
+      ↓
+Testing
+      ↓
+Security Validation
+
+This dynamic workflow selection is specifically recommended by the critical evaluation.
+
+8. STATE GRAPH MANAGER
+
+ASEA maintains a formal task state.
+
+Example:
+
+CREATED
+   ↓
+UNDERSTANDING
+   ↓
+DIAGNOSING
+   ↓
+PLANNING
+   ↓
+IMPLEMENTING
+   ↓
+VALIDATING
+   │
+   ├────────────── PASS ──────────────┐
+   │                                  ↓
+   │                               REVIEW
+   │                                  ↓
+   │                              SECURITY
+   │                                  ↓
+   │                                CI/CD
+   │                                  ↓
+   │                           FINAL VALIDATION
+   │                                  ↓
+   │                             PR_READY
+   │
+   └──── FAIL → FAILURE_CLASSIFICATION
+                         │
+                  ┌──────┴──────┐
+                  ↓             ↓
+                RETRY          ABORT
+                  │             │
+                  ↓             ↓
+                REPLAN        HUMAN
+                  │
+                  └────→ IMPLEMENTING
+
+Possible states:
+
+CREATED
+UNDERSTANDING
+ANALYZING
+DIAGNOSING
+PLANNING
+IMPLEMENTING
+TESTING
+VALIDATING
+RECOVERING
+REVIEWING
+SECURITY_CHECK
+CI_VALIDATION
+PR_READY
+HUMAN_REVIEW
+COMPLETED
+FAILED
+ESCALATED
+9. POLICY ENGINE
+
+Policy Engine answers:
+
+What is allowed?
+
+Examples:
+
+README modification
+→ LOW RISK
+
+Normal business logic
+→ MEDIUM RISK
+
+Authentication
+→ HIGH RISK
+
+Payment logic
+→ HIGH RISK
+
+Production infrastructure
+→ CRITICAL RISK
+
+Policies determine:
+
+allowed file paths
+allowed operations
+maximum modifications
+security-sensitive areas
+approval requirements
+execution restrictions
+10. PERMISSION MANAGER
+
+Permission Manager answers:
+
+Who is allowed to perform the action?
+
+Example:
+
+Coding Agent
+→ read/write source files
+
+Review Agent
+→ read-only
+
+Test Agent
+→ execute tests
+
+Git Tool
+→ branch / commit
+
+PR Generator
+→ create PR
+
+Important distinction:
+
+Policy Engine
+→ Is the action allowed?
+
+Permission Manager
+→ Is this agent allowed to perform it?
+
+Both remain separate.
+
+11. RETRY / RECOVERY MANAGER
+
+ASEA must never retry blindly.
+
+Every attempt should record:
+
+Attempt ID
+Hypothesis
+Plan
+Patch
+Failure
+Evidence
+Reason for retry
+
+Example:
+
+Attempt 1
+Hypothesis A
+Patch A
+Tests failed
+
+        ↓
+
+Attempt 2
+Revised hypothesis
+Patch B
+CI failed
+
+        ↓
+
+Attempt 3
+Alternative hypothesis
+Patch C
+Security failed
+
+        ↓
+
+Human Escalation
+
+There must be a hard limit on:
+
+Maximum attempts
+Maximum tokens
+Maximum cost
+Maximum execution time
+
+The failure model should be:
+
+Detection
+   ↓
+Classification
+   ↓
+Recovery
+   ↓
+Rollback
+   ↓
+Retry OR Escalation
+
+This follows the recommended reliability architecture.
+
+12. COST / BUDGET MANAGER
+
+Every task receives a budget.
+
+TASK BUDGET
+│
+├── Max LLM Tokens
+├── Max LLM Cost
+├── Max Attempts
+├── Max Execution Time
+└── Max Sandbox Resources
+
+Before expensive operations:
+
+Orchestrator
+      ↓
+Budget Check
+      ↓
+Allowed?
+   /     \
+ YES      NO
+  ↓        ↓
+Execute  Escalate
+
+This prevents runaway agent loops.
+
+13. HUMAN ESCALATION
+
+Human intervention is triggered when:
+
+Low confidence
+Multiple failed attempts
+Security risk
+Large code changes
+Architectural decision
+Sensitive files
+Budget exceeded
+Policy violation
+
+Flow:
+
+ASEA
+ ↓
+Generate
+ ↓
+Validate
+ ↓
+Evidence
+ ↓
+Risk Assessment
+ ↓
+Human Review
+ ↓
+Approve / Reject
+
+Human approval remains the final authority.
+
+14. INTELLIGENCE LAYER
+INTELLIGENCE
+│
+├── Issue Analysis Agent
+├── Root Cause Agent
+├── Planning Agent
+├── Coding Agent
+├── Test Generation Agent
+├── Recovery Agent
+└── Review Agent
+
+Agents provide reasoning.
+
+They do not directly control infrastructure.
+
+15. ISSUE ANALYSIS AGENT
+
+Input:
+
+Issue
+Error
+Stack Trace
+Logs
+Repository Context
+
+Output:
+
+IssueAnalysisArtifact
+
+Containing:
+
+Problem
+Affected Area
+Expected Behavior
+Observed Behavior
+Relevant Components
+Initial Hypotheses
+16. ROOT CAUSE AGENT
+
+The Root Cause Agent investigates possible explanations.
+
+Hypothesis A
+Hypothesis B
+Hypothesis C
+
+Then evaluates evidence.
+
+Output:
+
+RootCauseReport
+
+Root Cause
+Evidence
+Affected Components
+Rejected Hypotheses
+Side Effects
+Confidence
+Recommended Action
+
+Important principle:
+
+No code modification before a sufficiently supported diagnosis.
+
+17. PLANNING AGENT
+
+Creates a structured implementation plan.
+
+Example:
+
+1. Modify validation logic
+2. Preserve existing API behavior
+3. Add regression test
+4. Run module tests
+5. Run complete test suite
+6. Run static analysis
+7. Run security checks
+8. Validate CI
+
+The Coding Agent should implement the plan rather than independently inventing the entire solution.
+
+18. CODING AGENT
+
+Responsible for:
+
+Modify source code
+Create files
+Modify tests
+Update configuration when permitted
+
+But it does not directly write unrestricted files.
+
+Flow:
+
+Coding Agent
+      ↓
+Patch Proposal
+      ↓
+Patch Manager
+      ↓
+Policy Check
+      ↓
+Apply Patch
+19. TEST GENERATION AGENT
+
+Generates meaningful tests for:
+
+Normal behavior
+Edge cases
+Invalid inputs
+Boundary values
+Error conditions
+Regression scenarios
+Previously failing cases
+
+Goal:
+
+Test correctness, not merely increase coverage numbers.
+
+20. RECOVERY AGENT
+
+When validation fails:
+
+Failure
+   ↓
+Failure Analysis
+   ↓
+Identify incorrect assumption
+   ↓
+Alternative hypothesis
+   ↓
+New plan
+   ↓
+New patch
+
+Recovery Agent works with:
+
+Orchestrator
+State Manager
+Retry Manager
+Context Engine
+Evidence Store
+21. REVIEW AGENT
+
+The agent generating the solution should not be the sole validator.
+
+Review Agent checks:
+
+Correctness
+Maintainability
+Unnecessary changes
+Regression risk
+Security concerns
+Test completeness
+Consistency
+
+This separation improves reliability.
+
+22. CONTEXT / REPOSITORY INTELLIGENCE
+CONTEXT LAYER
+│
+├── Repository Knowledge Model
+├── Code Index
+├── AST
+├── Dependency Graph
+├── Repository Memory
+└── Context Engine
+
+This is the knowledge foundation of ASEA.
+
+23. AST
+
+AST represents code structure.
+
+Example:
+
+Class
+├── Fields
+├── Constructor
+├── Methods
+│   ├── Parameters
+│   ├── Statements
+│   └── Expressions
+
+AST helps agents understand code structurally rather than relying only on text.
+
+24. DEPENDENCY GRAPH
+
+Represents relationships.
+
+Example:
+
+Controller
+    ↓
+Service
+    ↓
+Repository
+    ↓
+Database
+
+It can also represent:
+
+Class → Class
+Method → Method
+Module → Module
+Service → Service
+25. CODE INDEX
+
+Provides retrieval.
+
+Index:
+
+Files
+Classes
+Methods
+Symbols
+Text
+Metadata
+Embeddings
+26. REPOSITORY KNOWLEDGE MODEL
+
+Higher-level understanding:
+
+Architecture
+Modules
+Components
+Dependencies
+APIs
+Tests
+Configurations
+Build system
+CI configuration
+27. REPOSITORY MEMORY
+
+Stores historical engineering knowledge:
+
+Previous Issues
+Previous Root Causes
+Previous Fixes
+Failed Attempts
+Past PRs
+Coding Patterns
+Human Decisions
+Architecture Decisions
+
+Human feedback should update repository memory.
+
+Human Review
+     ↓
+Approved / Rejected
+     ↓
+Memory Update
+28. CONTEXT ENGINE
+
+Context Engine is the unified query interface.
+
+Agent asks:
+
+"What affects UserService.updateProfile()?"
+
+Context Engine retrieves:
+
+AST
++
+Dependency Graph
++
+Code Index
++
+Repository Memory
++
+Git History
++
+Tests
++
+Logs
+
+and returns only relevant context.
+
+This prevents sending the entire repository to the LLM.
+
+29. MODEL PLATFORM
+
+New major architectural component:
+
+MODEL PLATFORM
+│
+├── Model Gateway
+├── Model Router
+├── Provider Adapters
+├── Fallback
+├── Rate Limiting
+├── Token Tracking
+├── Cost Tracking
+└── Model / Prompt Versioning
+
+Agents should not directly depend on a specific LLM provider.
+
+Instead:
+
+Agent
+ ↓
+Model Gateway
+ ↓
+Model Router
+ ↓
+LLM Provider
+
+Different tasks can use different model tiers.
+
+Triage
+→ Fast / cheap model
+
+Log classification
+→ Fast model
+
+Planning
+→ Medium model
+
+Root Cause
+→ Strong model
+
+Coding
+→ Frontier model
+
+Review
+→ Independent strong model
+30. ENGINEERING TOOL LAYER
+ENGINEERING TOOLS
+│
+├── Git Tool
+├── GitHub Tool
+├── File Tool
+├── Build Tool
+├── Test Tool
+├── Static Analysis Tool
+├── Security Tool
+└── CI/CD Tool
+
+Agents interact with tool interfaces, not infrastructure directly.
+
+Example:
+
+Coding Agent
+     ↓
+File Tool
+     ↓
+Sandbox
+     ↓
+Repository
+31. TOOL PRINCIPLE
+
+Never:
+
+LLM → Shell → Host
+
+Instead:
+
+Agent
+ ↓
+Tool Interface
+ ↓
+Policy
+ ↓
+Permission
+ ↓
+Sandbox
+ ↓
+Execution
+ ↓
+Result
+
+This creates a controlled execution boundary.
+
+32. EXECUTION / SANDBOX LAYER
+SANDBOX MANAGER
+│
+├── Worker Provisioner
+├── Resource Limiter
+├── Network Isolation
+├── Filesystem Isolation
+├── Process Isolation
+├── Secret Injection
+└── Worker Cleanup
+
+Each task should ideally receive an isolated execution environment.
+
+33. SANDBOX WORKFLOW
+Task
+ ↓
+Create Ephemeral Worker
+ ↓
+Clone Repository
+ ↓
+Apply Patch
+ ↓
+Build
+ ↓
+Test
+ ↓
+Static Analysis
+ ↓
+Security Scan
+ ↓
+Collect Results
+ ↓
+Destroy Worker
+
+The host system should never directly execute untrusted repository code.
+
+34. SECRETS MANAGEMENT
+
+Secrets must never be casually exposed to agents.
+
+Architecture:
+
+Secrets Manager
+      ↓
+Sandbox
+      ↓
+Restricted Credential
+      ↓
+Tool
+      ↓
+External Service
+
+The LLM should not receive raw secrets.
+
+This is particularly important because repository/build environments may require credentials.
+
+35. CHANGE / DELIVERY LAYER
+DELIVERY
+│
+├── Patch Manager
+├── Diff Manager
+├── Final Validation
+├── Risk Assessment
+├── PR Generator
+└── Human Approval
+
+Patch Manager is cross-cutting, not merely a final delivery component.
+
+It is used by:
+
+Coding Agent
+Recovery Agent
+Refactoring
+Test Agent
+36. PATCH MANAGER
+
+Patch flow:
+
+Agent
+ ↓
+Patch Proposal
+ ↓
+Diff Generation
+ ↓
+Policy Check
+ ↓
+Permission Check
+ ↓
+Apply Patch
+ ↓
+Validation
+
+Patch Manager should track:
+
+Files Changed
+Lines Added
+Lines Removed
+Sensitive Files
+Dependency Changes
+Infrastructure Changes
+Security-sensitive Changes
+37. RISK ASSESSMENT
+
+Risk should be based on evidence rather than an arbitrary LLM percentage.
+
+Factors:
+
+Files Changed
+Lines Changed
+Security Sensitivity
+Dependency Changes
+Infrastructure Changes
+Test Results
+Coverage
+Static Analysis
+Security Results
+Historical Risk
+Policy Rules
+
+Output:
+
+LOW
+MEDIUM
+HIGH
+CRITICAL
+38. EVIDENCE & AUDIT SYSTEM
+
+This is the core differentiating component of ASEA.
+
+EVIDENCE SYSTEM
+│
+├── Evidence Collector
+├── Evidence Store
+├── Evidence Bundle
+├── Evidence Query API
+└── Decision History
+
+Every task should produce an evidence trail.
+
+39. EVIDENCE BUNDLE
+
+Example:
+
+ASEA Task #1024
+│
+├── Original Issue
+├── Issue Analysis
+├── Root Cause Report
+├── Implementation Plan
+├── Code Diff
+├── Generated Tests
+├── Test Results
+├── Build Results
+├── Static Analysis
+├── Security Scan
+├── CI Results
+├── Agent Decisions
+├── Tool Calls
+├── Retry History
+├── Risk Assessment
+├── Review Report
+└── Human Decision
+
+Final output:
+
+Validated Engineering Change + Evidence
+
+This is the primary product differentiation.
+
+40. EVENT / ASYNC LAYER
+
+For MVP:
+
+Redis Streams
+
+Use events such as:
+
+TaskCreated
+RepositoryIndexed
+IssueAnalyzed
+RootCauseIdentified
+PlanCreated
+PatchGenerated
+TestsGenerated
+ValidationStarted
+ValidationFailed
+RecoveryStarted
+ValidationPassed
+ReviewCompleted
+PRCreated
+HumanApproved
+TaskCompleted
+
+This enables asynchronous execution.
+
+41. WHY NOT KAFKA INITIALLY?
+
+Kafka is useful at large scale, but for the initial project it adds unnecessary operational complexity.
+
+Therefore:
+
+MVP
+→ Redis Streams
+
+Enterprise Scale
+→ Kafka
+
+The critical evaluation explicitly recommends Redis Streams for MVP and Kafka later when high-throughput independent event flows justify it.
+
+42. DATABASE ARCHITECTURE
+
+Initial storage:
+
+PostgreSQL
+│
+├── Tasks
+├── Repositories
+├── Agents
+├── State
+├── Audit
+├── Evidence Metadata
+├── Repository Memory
+├── Dependency Graph
+└── Embeddings
+
+Use:
+
+pgvector
+
+for semantic retrieval.
+
+Dependency graph initially:
+
+PostgreSQL adjacency tables
+
+instead of a dedicated graph database.
+
+43. OBJECT STORAGE
+
+Large artifacts should not be stored directly inside PostgreSQL.
+
+Use object storage for:
+
+Build Logs
+Test Reports
+CI Logs
+Security Reports
+Evidence Bundles
+Large Repository Artifacts
+
+PostgreSQL stores metadata and references.
+
+The recommended storage split is consistent with the critical evaluation.
+
+44. EVALUATION & LEARNING SYSTEM
+
+ASEA should continuously measure itself.
+
+EVALUATION
+│
+├── Benchmark Runner
+├── Task Dataset
+├── Agent Evaluation
+├── Prompt Evaluation
+├── Model Evaluation
+├── Cost Measurement
+├── Performance Metrics
+└── Repository Memory Feedback
+
+Every task records:
+
+Model Version
+Prompt Version
+Agent Version
+Tool Version
+Result
+Cost
+Latency
+Retries
+Human Intervention
+45. BENCHMARKING
+
+Metrics:
+
+Issue Resolution Rate
+Patch Success Rate
+Test Pass Rate
+Regression Rate
+Average Resolution Time
+Human Intervention Rate
+Retry Count
+CI Recovery Rate
+Test Coverage Improvement
+PR Acceptance Rate
+Cost per Task
+Evidence Completeness Rate
+
+The most important unique metric for ASEA:
+
+Evidence Completeness Rate
+
+because the system's differentiation is evidence-driven remediation.
+
+External benchmarks can provide credibility, but internal benchmarks on realistic repositories should be equally important.
+
+46. OBSERVABILITY
+
+Observability is cross-cutting.
+
+Track:
+
+Agent Execution
+LLM Requests
+Token Usage
+Latency
+Tool Calls
+Sandbox Execution
+Retries
+Failures
+Task Duration
+Cost
+Success Rate
+
+Initially:
+
+Structured JSON Logs
++
+OpenTelemetry instrumentation
+
+Later:
+
+Prometheus
+Grafana
+Advanced tracing
+
+Full observability infrastructure is not necessary for MVP.
+
+47. MULTI-TENANCY
+
+For the initial research MVP:
+
+Single Tenant
+
+But database design should allow:
+
+tenant_id
+
+from the beginning.
+
+Future:
+
+Tenant
+ ↓
+Repositories
+ ↓
+Tasks
+ ↓
+Evidence
+ ↓
+Users
+
+Full enterprise tenant administration can come later.
+
+48. FINAL ASEA RUNTIME WORKFLOW
+
+This is the canonical workflow that the entire system follows.
+
+                         ENGINEERING TASK
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │ TASK MANAGER │
+                         └──────┬───────┘
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │ ORCHESTRATOR │
+                         └──────┬───────┘
+                                │
+                                ▼
+                       DECISION / STRATEGY
+                                │
+                     "What workflow is needed?"
+                                │
+                                ▼
+                         CONTEXT ENGINE
+                                │
+               ┌────────────────┼────────────────┐
+               ▼                ▼                ▼
+              AST          DEPENDENCY         MEMORY
+               │             GRAPH              │
+               └────────────────┼────────────────┘
+                                ▼
+                         ISSUE ANALYSIS
+                                │
+                                ▼
+                          ROOT CAUSE
+                                │
+                                ▼
+                            PLAN
+                                │
+                                ▼
+                         POLICY CHECK
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                  DENY                    ALLOW
+                    │                       │
+                    ▼                       ▼
+                 HUMAN                   CODING
+                                            │
+                                            ▼
+                                      PATCH MANAGER
+                                            │
+                                            ▼
+                                         SANDBOX
+                                            │
+                                            ▼
+                                     BUILD / TEST
+                                            │
+                                            ▼
+                                       VALIDATION
+                                            │
+                              ┌─────────────┴─────────────┐
+                              │                           │
+                            PASS                        FAIL
+                              │                           │
+                              ▼                           ▼
+                          SECURITY                 FAILURE CLASSIFICATION
+                              │                           │
+                              ▼                           ▼
+                           REVIEW                  RECOVERY AGENT
+                              │                           │
+                              ▼                           ▼
+                         RISK ASSESSMENT             RE-PLAN
+                              │                           │
+                              ▼                           │
+                             CI/CD                        │
+                              │                           │
+                              ▼                           │
+                       FINAL VALIDATION                   │
+                              │                           │
+                              ▼                           │
+                       EVIDENCE BUNDLE                    │
+                              │                           │
+                              ▼                           │
+                        RISK DECISION                     │
+                              │                           │
+                    ┌─────────┴──────────┐                │
+                    ▼                    ▼                │
+             HUMAN REQUIRED          AUTO PR             │
+                    │                    │                │
+                    ▼                    ▼                │
+                 APPROVE             PR CREATED           │
+                    │                    │                │
+                    └──────────┬─────────┘                │
+                               ▼                          │
+                      OUTCOME RECORDED                    │
+                               │                          │
+                               ▼                          │
+                    REPOSITORY MEMORY                     │
+                               │                          │
+                               ▼                          │
+                         EVALUATION                        │
+                                                          │
+                         ←────────────────────────────────┘
+49. COMPLETE ARCHITECTURAL VIEW
+
+Putting everything together:
+
+                                      ┌──────────────────────┐
+                                      │       USER / ISSUE   │
+                                      └───────────┬──────────┘
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           CONTROL PLANE                                  │
+│                                                                         │
+│ Task Manager → Orchestrator → State Graph → Decision Engine             │
+│                         │                                               │
+│             Policy / Permission / Budget / Retry / Escalation           │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │
+          ┌───────────────┼──────────────────┐
+          │               │                  │
+          ▼               ▼                  ▼
+┌────────────────┐ ┌────────────────┐ ┌────────────────────┐
+│ INTELLIGENCE   │ │ CONTEXT        │ │ MODEL PLATFORM     │
+│                │ │                │ │                    │
+│ Issue          │ │ Repository     │ │ Model Gateway      │
+│ Root Cause     │ │ Knowledge      │ │ Router             │
+│ Planning       │ │ AST            │ │ Providers          │
+│ Coding         │ │ Dependency     │ │ Fallback           │
+│ Testing        │ │ Graph          │ │ Cost               │
+│ Recovery       │ │ Code Index     │ │ Versioning         │
+│ Review         │ │ Memory         │ │                    │
+│                │ │ Context Engine │ │                    │
+└───────┬────────┘ └───────┬────────┘ └─────────┬──────────┘
+        │                  │                    │
+        └──────────────────┼────────────────────┘
+                           │
+                           ▼
+                 ┌──────────────────┐
+                 │ ENGINEERING TOOLS │
+                 │                  │
+                 │ Git              │
+                 │ GitHub           │
+                 │ File             │
+                 │ Build            │
+                 │ Test             │
+                 │ Static Analysis  │
+                 │ Security         │
+                 │ CI/CD            │
+                 └────────┬─────────┘
+                          │
+                          ▼
+                 ┌──────────────────┐
+                 │ SANDBOX MANAGER  │
+                 │                  │
+                 │ Isolation        │
+                 │ Resources        │
+                 │ Network          │
+                 │ Secrets          │
+                 │ Ephemeral Worker │
+                 └────────┬─────────┘
+                          │
+                          ▼
+                 ┌──────────────────┐
+                 │ VALIDATION       │
+                 │                  │
+                 │ Build            │
+                 │ Tests            │
+                 │ Static Analysis  │
+                 │ Security         │
+                 │ CI/CD            │
+                 └────────┬─────────┘
+                          │
+                          ▼
+                 ┌──────────────────┐
+                 │ EVIDENCE SYSTEM  │
+                 │                  │
+                 │ Evidence Store   │
+                 │ Audit Trail      │
+                 │ Evidence Bundle  │
+                 └────────┬─────────┘
+                          │
+                          ▼
+                 ┌──────────────────┐
+                 │ RISK ASSESSMENT  │
+                 └────────┬─────────┘
+                          │
+                    ┌─────┴─────┐
+                    ▼           ▼
+                 HUMAN         PR
+                APPROVAL     GENERATOR
+                    │           │
+                    └─────┬─────┘
+                          ▼
+                 ┌──────────────────┐
+                 │ MEMORY / EVAL    │
+                 └──────────────────┘
+50. HARD ARCHITECTURAL RULES
+
+These rules are non-negotiable for ASEA.
+
+Rule 1
+Agent → Agent → Agent
+
+❌ Don't do this.
+
+Use:
+
+Agent → Artifact → Orchestrator → Agent
+Rule 2
+LLM → Shell → Host
+
+❌ Never.
+
+Use:
+
+Agent → Tool → Policy → Sandbox
+Rule 3
+LLM says confidence = 95%
+→ merge
+
+❌ Never.
+
+Use evidence-based validation.
+
+Rule 4
+Every task → Every agent
+
+❌ Never.
+
+Use dynamic workflow selection.
+
+Rule 5
+Tests passed
+→ production ready
+
+❌ Never.
+
+Require:
+
+Tests
++
+Build
++
+Static Analysis
++
+Security
++
+Risk
++
+Policy
++
+Review
+Rule 6
+Retry forever
+
+❌ Never.
+
+Use bounded retry + escalation.
+
+Rule 7
+Agent gets secrets
+
+❌ Never.
+
+Use controlled secret injection.
+
+Rule 8
+Generated patch = accepted patch
+
+❌ Never.
+
+Every patch requires validation.
+
+51. MVP ARCHITECTURE
+
+We should not build the complete architecture immediately.
+
+The first working version should be:
+
+                    USER
+                     │
+                     ▼
+              Spring Boot API
+                     │
+                     ▼
+                Task Manager
+                     │
+                     ▼
+                Orchestrator
+                     │
+              ┌──────┴──────┐
+              ▼             ▼
+         Coding Agent   Test Agent
+              │             │
+              └──────┬──────┘
+                     ▼
+                GitHub Tool
+                     │
+                     ▼
+               Docker Sandbox
+                     │
+                     ▼
+              Build + Test
+                     │
+                     ▼
+                Evidence
+                     │
+                     ▼
+                     PR
+                     │
+                     ▼
+               Human Approval
+
+Initial infrastructure:
+
+Java
+Spring Boot
+PostgreSQL
+Redis
+Docker
+GitHub
+LLM API
+React
+
+No:
+
+Kafka
+Neo4j
+Kubernetes
+Firecracker
+Complex multi-tenancy
+Full enterprise observability
+
+The critical evaluation explicitly recommends this narrower MVP path.
+
+52. PHASED IMPLEMENTATION ROADMAP
+PHASE 1 — Foundation
+Architecture
+Domain Model
+Task Management
+State Graph
+Basic Orchestrator
+GitHub Integration
+Docker Sandbox
+Evidence Store
+Human Approval
+PHASE 2 — Basic Autonomous Engineering
+Coding Agent
+Test Generation Agent
+Build Tool
+Test Tool
+Patch Manager
+Basic Context Engine
+
+Goal:
+
+Issue
+ ↓
+Code
+ ↓
+Test
+ ↓
+Validated Patch
+PHASE 3 — Real Diagnosis
+Repository Intelligence
+AST
+Code Index
+Dependency Graph
+Issue Analysis
+Root Cause Agent
+Planning Agent
+
+Goal:
+
+Issue
+ ↓
+Understand Repository
+ ↓
+Root Cause
+ ↓
+Plan
+ ↓
+Fix
+PHASE 4 — Autonomous Recovery
+Recovery Agent
+Retry Manager
+Failure Classification
+Rollback
+State Graph
+
+Goal:
+
+Failure
+ ↓
+Understand failure
+ ↓
+Re-plan
+ ↓
+Retry
+PHASE 5 — Security + Governance
+Policy Engine
+Permission Manager
+Risk Assessment
+Security Tools
+Secrets Manager
+Audit System
+
+Goal:
+
+Autonomous
++
+Controlled
++
+Auditable
+PHASE 6 — CI/CD Automation
+CI/CD Tool
+Log Analysis
+Failure Recovery
+Automated CI Fix
+
+Goal:
+
+CI Failure
+ ↓
+Diagnosis
+ ↓
+Fix
+ ↓
+Test
+ ↓
+CI Retry
+PHASE 7 — Evidence-Driven Delivery
+Evidence Collector
+Evidence Bundle
+PR Generator
+Human Approval
+Repository Memory
+
+Goal:
+
+Validated Engineering Change
++
+Defensible Evidence
+PHASE 8 — Evaluation
+Benchmark Runner
+Real GitHub Issues
+Internal Dataset
+Agent Evaluation
+Prompt Evaluation
+Model Evaluation
+Cost Analysis
+
+Goal:
+
+Measure whether ASEA actually works.
+
+PHASE 9 — Scale
+
+Only after the core system works:
+
+Redis Streams
+→ Kafka
+
+PostgreSQL graph
+→ Neo4j if required
+
+Docker
+→ stronger isolation / microVM
+
+Basic deployment
+→ Kubernetes
+
+Basic observability
+→ full OTel + Prometheus + Grafana
+53. WHAT WE ARE NOT BUILDING INITIALLY
+
+To prevent scope explosion:
+
+❌ General-purpose Devin competitor
+❌ Full autonomous feature development
+❌ Seven agents for every task
+❌ Kafka from Day 1
+❌ Neo4j from Day 1
+❌ Kubernetes from Day 1
+❌ Firecracker from Day 1
+❌ Self-hosted frontier LLM
+❌ Full enterprise SSO
+❌ Multi-region infrastructure
+❌ SOC 2 certification
+
+These can come later if the project genuinely requires them.
+
+54. FINAL TECHNOLOGY-AGNOSTIC PRINCIPLE
+
+The architecture is designed so that the underlying technology can evolve.
+
+For example:
+
+LLM
+OpenAI → Anthropic → Gemini → Local Model
+
+without changing agents.
+
+Similarly:
+
+Messaging
+Redis Streams → Kafka
+
+without changing the business logic.
+
+And:
+
+Sandbox
+Docker → gVisor → Firecracker
+
+without changing agents.
+
+And:
+
+Graph
+PostgreSQL → Neo4j
+
+without changing the Context Engine contract.
+
+This is why interfaces and clear component contracts will be extremely important when we start implementation.
+
+55. FINAL PROJECT VISION
+
+The complete ASEA vision is:
+
+                    HUMAN
+                      │
+                      │ Objective
+                      ▼
+                    ASEA
+                      │
+              ┌───────┴────────┐
+              │                │
+         UNDERSTANDS        GOVERNS
+              │                │
+         Repository        Policy
+         Issue             Permission
+         Context           Budget
+         History           Security
+              │                │
+              └───────┬────────┘
+                      ▼
+                   REASONS
+                      │
+                  AI Agents
+                      │
+                      ▼
+                   ACTS
+                      │
+                   Tools
+                      │
+                      ▼
+                 SANDBOX
+                      │
+                      ▼
+                 VALIDATES
+                      │
+       ┌──────────────┼──────────────┐
+       ▼              ▼              ▼
+      Test          Security         CI
+       │              │              │
+       └──────────────┼──────────────┘
+                      ▼
+                  EVIDENCE
+                      │
+                      ▼
+                    RISK
+                      │
+              ┌───────┴───────┐
+              ▼               ▼
+           HUMAN             PR
+          APPROVAL        GENERATION
+              │               │
+              └───────┬───────┘
+                      ▼
+                 ENGINEERING
+                   OUTCOME
+56. FINAL ONE-LINE DEFINITION
+
+ASEA is a Java-first, evidence-driven autonomous software remediation platform that transforms software issues, CI failures, and dependency/security problems into validated pull requests through policy-governed AI agents, repository-level intelligence, sandboxed execution, automated verification, failure recovery, and human-supervised delivery.
+
+🔒 ARCHITECTURE STATUS
+FINAL — LOCKED
+
+From this point onward, this will be our reference architecture.
+
+We will not randomly add technologies or agents during implementation.
+
+Any future technology we discuss must answer:
+
+"Where does this fit into the locked ASEA architecture, and what problem does it solve?"
