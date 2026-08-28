@@ -1,0 +1,266 @@
+DIVISION B — AI ENGINEERING & REPOSITORY INTELLIGENCE
+Owner
+
+Person 2
+
+This person builds the actual engineering intelligence.
+
+DIVISION B
+│
+├── Agent Runtime
+├── Issue Analysis Agent
+├── Root Cause Agent
+├── Planning Agent
+├── Coding Agent
+├── Test Generation Agent
+├── Recovery Agent
+├── Review Agent
+├── Context Engine
+├── Repository Knowledge Model
+├── Code Index
+├── AST
+├── Dependency Graph
+├── Repository Memory
+└── Model Gateway
+
+This is probably the most research-heavy division.
+
+7. AI Stack
+
+Here I recommend Python, despite the backend being Java.
+
+Why?
+
+Because the AI ecosystem is much stronger there.
+
+Primary
+Python 3.12+
+Framework
+
+I would not make LangChain the foundation of the entire system.
+
+Instead:
+
+Python
+│
+├── FastAPI
+├── Pydantic
+├── LiteLLM / model gateway layer
+├── custom agent runtime
+└── selected AI libraries
+
+The important architectural principle:
+
+ASEA owns the agent architecture; the framework should not own ASEA.
+
+8. Model Gateway
+
+Architecture:
+
+Java Orchestrator
+        │
+        ▼
+   Model Gateway
+        │
+    ┌───┼────┐
+    ▼   ▼    ▼
+ OpenAI  Anthropic  Local
+
+The Model Gateway abstracts:
+
+Provider
+Model
+Prompt
+Token usage
+Cost
+Latency
+Retries
+Fallback
+Version
+9. AI Agent Runtime
+
+Person 2 owns:
+
+Agent Runtime
+
+Every agent follows a common contract:
+
+Agent
+│
+├── Input
+├── Context
+├── Instructions
+├── Tools
+├── Model
+└── Output Artifact
+
+Conceptually:
+
+class Agent:
+    def execute(task, context) -> Artifact:
+        ...
+
+The actual Java orchestration remains in Division A.
+
+10. Agent architecture
+                    Agent Runtime
+                         │
+        ┌────────────────┼────────────────┐
+        ↓                ↓                ↓
+Issue Analysis       Root Cause       Planning
+        │                │                │
+        └────────────────┼────────────────┘
+                         ↓
+                       Coding
+                         ↓
+                       Testing
+                         ↓
+                      Recovery
+                         ↓
+                       Review
+
+But again:
+
+agents don't directly call each other.
+
+They return artifacts.
+
+11. Context Engine
+
+This is one of the most important components in Division B.
+
+                    Context Engine
+                         │
+        ┌────────────────┼────────────────┐
+        ↓                ↓                ↓
+      AST          Dependency Graph    Code Index
+        │                │                │
+        └────────────────┼────────────────┘
+                         ↓
+                Repository Knowledge
+                         │
+                         ↓
+                  Repository Memory
+
+Agent asks:
+
+"Find code related to payment validation."
+
+Context Engine returns:
+
+Relevant files
+Relevant classes
+Relevant methods
+Dependencies
+Tests
+History
+Previous fixes
+12. AST technology
+
+Because ASEA initially focuses heavily on Java repositories:
+
+Primary
+
+JavaParser
+
+for deep Java source analysis.
+
+Potentially later:
+
+Tree-sitter
+
+for multi-language support.
+
+So:
+
+MVP
+JavaParser
+
+Future
+JavaParser + Tree-sitter
+
+This keeps the first implementation manageable.
+
+13. Dependency Graph
+
+Don't start with Neo4j.
+
+Use:
+
+PostgreSQL
++
+Graph tables
+
+Example:
+
+source_node
+target_node
+relationship_type
+
+Example:
+
+PaymentController
+      ↓ CALLS
+PaymentService
+      ↓ CALLS
+PaymentRepository
+
+Later, if graph queries genuinely become the bottleneck:
+
+PostgreSQL
+    ↓
+Neo4j
+14. Code Index
+
+Division B owns:
+
+Code Index
+
+Index:
+
+File
+Class
+Method
+Symbol
+Import
+Documentation
+Metadata
+Embedding
+
+Search strategy:
+
+Exact Search
++
+Symbol Search
++
+Structural Search
++
+Semantic Search
+
+This is much better than pure vector RAG.
+
+15. Repository Memory
+
+Memory stores:
+
+Previous issues
+Previous fixes
+Failed attempts
+Accepted PRs
+Rejected PRs
+Human feedback
+Architecture decisions
+
+Architecture:
+
+Task
+ ↓
+Memory Retrieval
+ ↓
+Agent
+ ↓
+Solution
+ ↓
+Human Result
+ ↓
+Memory Update
