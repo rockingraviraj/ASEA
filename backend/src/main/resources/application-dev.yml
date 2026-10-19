@@ -1,0 +1,6 @@
+# Development profile configuration — explicitly activated via spring.profiles.active=dev
+asea:
+  security:
+    jwt-secret: dev-only-insecure-jwt-secret-do-not-use-in-production-1234567890
+    api-key: asea-dev-api-key-test-only
+    tenant-id: dev-tenant
